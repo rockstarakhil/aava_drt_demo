@@ -1,0 +1,196 @@
+{
+  "workflow": "LLD",
+  "stage": "design_card_writer",
+  "status": "DRAFT_READY",
+  "message": "",
+  "iteration": 1,
+  "maxIterations": 1,
+  "ticket": {
+    "system": "ADO",
+    "id": "1857",
+    "storyId": "US-ASK-001"
+  },
+  "runFolder": "design/runs/1857",
+  "plan": {
+    "apiCount": 1,
+    "cards": [
+      {
+        "cardType": "api",
+        "cardId": "ASK-POST-CORE-ASKS",
+        "module": "ASK",
+        "method": "POST",
+        "path": "/core-asks",
+        "proposed": {
+          "operationId": "createCoreAsk",
+          "requestSchema": "CreateCoreAskRequest",
+          "responseSchema": "CreateCoreAskResponse"
+        },
+        "complexity": "Complex",
+        "complexityReason": "SUBMIT action changes workflow state, creates a human task, branches routing on leadership group membership, and writes multiple aggregates (Ask, AskVersion, WorkflowTask, WorkflowDecision, WorkflowHistory, OutboxMessage, Comment, Audit) atomically.",
+        "sources": [
+          "US-ASK-001",
+          "ADO 1857",
+          "FR1",
+          "FR2",
+          "FR3",
+          "FR4",
+          "FR5",
+          "FR6",
+          "FR7",
+          "FR8",
+          "FR9",
+          "FR10",
+          "FR11",
+          "FR12",
+          "BR1",
+          "BR2",
+          "BR3",
+          "BR4",
+          "BR5",
+          "BR6",
+          "BR7",
+          "BR8",
+          "BR9",
+          "BR10",
+          "BR11",
+          "BR12",
+          "BR13",
+          "BR14",
+          "BR15",
+          "BR16",
+          "BR17",
+          "BR18",
+          "BR19",
+          "BR20",
+          "BR21",
+          "BR22",
+          "BR23",
+          "BR24",
+          "BR25",
+          "BR26",
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "AC5",
+          "AC6",
+          "AC7"
+        ],
+        "standards": [
+          "ARCH 001",
+          "ARCH 002",
+          "ARCH 003",
+          "ARCH 004",
+          "DATA 001",
+          "DATA 003",
+          "DATA 004",
+          "API 001",
+          "API 002",
+          "SEC 001",
+          "SEC 002",
+          "SEC 003",
+          "WF 001",
+          "WF 003",
+          "REL 001",
+          "REL 002",
+          "OBS 001",
+          "TEST 001"
+        ],
+        "differences": [
+          {
+            "item": "API path",
+            "specValue": "POST /core-asks",
+            "masterLldValue": "POST /api/v1/asks (proposed catalogue, MLLD §15)",
+            "owner": "Solution Architecture"
+          },
+          {
+            "item": "Workflow status references",
+            "specValue": "Numeric status IDs 123 (In Progress), 127 (PPL Review), 145 (DPP Ops Review)",
+            "masterLldValue": "Named states only: Draft, Pending PPL Approval, etc. (MLLD §7.4); no numeric ID mapping present",
+            "owner": "Business Analysis"
+          },
+          {
+            "item": "HTTP error status code for business rule violations",
+            "specValue": "422 for date constraint and FTE violations (AC5, AC7, Error Behaviour section)",
+            "masterLldValue": "Master LLD error catalogue (MLLD §12.2) defines 400 validation_failed for invalid requests; 422 is not listed",
+            "owner": "Solution Architecture"
+          },
+          {
+            "item": "Leadership submitter routing shortcut",
+            "specValue": "Leadership group submitter routes directly to status 145 DPP Ops Review, bypassing PPL Review (BR25, AC3)",
+            "masterLldValue": "MLLD §7.4 references 'Leadership submitter shortcut' but detail is unconfirmed (open item LLD T03)",
+            "owner": "Solution Architecture"
+          },
+          {
+            "item": "buttonValue=Exit accepted by the API as a no-op",
+            "specValue": "API accepts Exit buttonValue and returns success without persisting data (FR6, AC4)",
+            "masterLldValue": "No equivalent pattern in Master LLD; exit/cancel-before-save is a UI concern with no API counterpart in the catalogue",
+            "owner": "Solution Architecture"
+          }
+        ],
+        "missingFacts": [
+          {
+            "item": "Status ID to name mapping: 123, 127, 145 — exact named-state equivalents not confirmed in any approved source",
+            "owner": "Business Analysis"
+          },
+          {
+            "item": "'Top-3 set' for levelNeedId referenced in BR17 — specific reference data IDs not defined",
+            "owner": "Business Analysis"
+          },
+          {
+            "item": "'First option' ID for needReasonId (BR6) and generalSpecialityNeedId (BR7) — specific reference data IDs not defined",
+            "owner": "Business Analysis"
+          },
+          {
+            "item": "'Retirement' value for needReasonId referenced in BR11 — specific reference data ID not defined",
+            "owner": "Business Analysis"
+          },
+          {
+            "item": "Leadership group membership rule and attribute source used for routing decision (BR24, BR25, AC2, AC3) — not present in RBAC matrix reference",
+            "owner": "Security"
+          },
+          {
+            "item": "Exact permission code for 'Create New ASK' — permission name not specified in spec or RBAC matrix reference",
+            "owner": "Security"
+          },
+          {
+            "item": "Success HTTP status code — spec states 200 or 201 but does not confirm which applies for a create operation",
+            "owner": "API Contract owner"
+          },
+          {
+            "item": "Idempotency key requirement and scope for the create command — not specified in spec",
+            "owner": "Solution Architecture"
+          },
+          {
+            "item": "Transaction scope across Ask, Task, Comment, Audit, and Attachment entities — explicitly unconfirmed in spec (Assumption 1)",
+            "owner": "Solution Architecture"
+          },
+          {
+            "item": "'New-version only' field semantics for pml, titlingCategory, transitionalCoach (BR9, BR18, BR19) — not clarified whether this create operation is the new version context",
+            "owner": "Business Analysis"
+          }
+        ],
+        "cardStatus": "Ready for Review",
+        "blockers": [],
+        "draftPath": "design/drafts/ASK-POST-CORE-ASKS.draft.md",
+        "targetPath": "design/api-cards/ASK-POST-CORE-ASKS.md"
+      }
+    ],
+    "assumptions": [
+      "buttonValue=Exit is treated as a server-side no-op returning success without persistence (confirmed in spec Assumption 2).",
+      "Attachment file-upload contract is represented as a file upload array in the request body (confirmed in spec Assumption 3).",
+      "All entities (Ask, Task, Comment, Audit, Attachments) are created atomically or not at all — transaction behaviour is unconfirmed and recorded as a missing fact.",
+      "Leadership group membership is resolved from the authenticated caller's server-side profile, never from the request body (SEC 003).",
+      "The 'new-version only' field qualifier in BR9, BR18, BR19 applies to this initial create operation as version 1."
+    ]
+  },
+  "drafts": {
+    "planPath": "design/runs/1857/design-card-plan.json",
+    "written": [
+      "ASK-POST-CORE-ASKS"
+    ],
+    "commitSha": ""
+  },
+  "validation": null,
+  "history": []
+}
