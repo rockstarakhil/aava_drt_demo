@@ -1,0 +1,326 @@
+openapi: 3.0.3
+info:
+  title: DRT Platform API
+  version: 1.0.0
+  description: API for the DRT Platform
+servers:
+  - url: https://{host}/api/v1
+    variables:
+      host:
+        default: api.drt.kpmg.com
+        description: API host
+
+security:
+  - EntraOAuth2:
+    - "api://drt-backend-api/user_impersonation"
+
+paths:
+  /core-asks:
+    post:
+      operationId: createCoreAsk
+      summary: Create a Core ASK
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Unique key to ensure idempotent processing of retry requests
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCoreAskRequest'
+      responses:
+        '201':
+          description: Core ASK created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateCoreAskResponse'
+        '200':
+          description: Exit action - no changes persisted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateCoreAskResponse'
+        '400':
+          description: Validation failed - missing required field, inactive reference ID, or constraint violation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '403':
+          description: Forbidden - caller lacks Create New ASK permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '409':
+          description: Conflict - duplicate Idempotency-Key with different request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '503':
+          description: Service unavailable - reference data, employee, or attachment service down
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+components:
+  securitySchemes:
+    EntraOAuth2:
+      type: oauth2
+      description: >-
+        Microsoft Entra ID, OAuth 2.0 Authorization Code Flow with PKCE.
+        The API validates issuer, tenant, audience, signature and lifetime.
+      flows:
+        authorizationCode:
+          authorizationUrl: "https://login.microsoftonline.com/TENANT_ID/oauth2/v2.0/authorize"
+          tokenUrl: "https://login.microsoftonline.com/TENANT_ID/oauth2/v2.0/token"
+          scopes:
+            "api://drt-backend-api/user_impersonation": "Access DRT on behalf of the signed-in user"
+
+  schemas:
+    CreateCoreAskRequest:
+      type: object
+      required:
+        - coreAskDetails
+        - buttonValue
+      properties:
+        coreAskDetails:
+          $ref: '#/components/schemas/CoreAskDetails'
+        comment:
+          type: string
+          description: Optional comment text
+        documents:
+          type: array
+          description: File upload array for attachments
+          items:
+            type: string
+            format: binary
+        buttonValue:
+          type: string
+          description: "Action to perform: Save & Exit (draft), SUBMIT (for review), or Exit (no-op)"
+          enum:
+            - "Save & Exit"
+            - "SUBMIT"
+            - "Exit"
+
+    CoreAskDetails:
+      type: object
+      required:
+        - coreAskName
+        - dppGroupId
+        - needReasonId
+        - generalSpecialityNeedId
+        - levelNeedId
+        - projectedStartDate
+        - headCountAmount
+        - fteAmount
+        - titlingCategory
+        - roleSummary
+        - roleResponsibility
+        - roleQualification
+      properties:
+        coreAskName:
+          type: string
+          maxLength: 200
+          description: Name of the Core ASK
+        dppGroupId:
+          type: integer
+          format: int32
+          description: DPP Group identifier - must be active
+        needReasonId:
+          type: integer
+          format: int32
+          description: Need reason identifier
+        generalSpecialityNeedId:
+          type: integer
+          format: int32
+          description: General/Specialty need identifier
+        generalSpecialityNeedComment:
+          type: string
+          description: Required unless generalSpecialityNeedId is the first option
+        levelNeedId:
+          type: integer
+          format: int32
+          description: Level need identifier
+        pml:
+          type: string
+          maxLength: 99
+          description: PML field - new-version only
+        projectedStartDate:
+          type: string
+          format: date
+          description: Projected start date in ISO 8601 format
+        endDate:
+          type: string
+          format: date
+          description: End date - required unless needReasonId is retirement; must be after projectedStartDate and not before today
+        outgoingResource:
+          type: string
+          description: Derived from employeeId - read-only, ignored if provided
+        employeeId:
+          type: integer
+          format: int32
+          description: Employee identifier
+        headCountAmount:
+          type: integer
+          format: int32
+          description: Head count amount
+        fteAmount:
+          type: number
+          format: double
+          description: FTE amount - must not exceed headCountAmount
+        rolePostingId:
+          type: integer
+          format: int32
+          description: Role posting identifier - required when levelNeedId is in the top-3 set
+        numberofresources:
+          type: integer
+          format: int32
+          description: Number of resources
+        titlingCategory:
+          type: string
+          description: Titling category - new-version only
+        transitionalCoach:
+          type: string
+          maxLength: 99
+          description: Transitional coach - new-version only
+        roleSummary:
+          type: string
+          description: Role summary
+        roleResponsibility:
+          type: string
+          description: Role responsibility
+        roleQualification:
+          type: string
+          description: Role qualification
+
+    CreateCoreAskResponse:
+      type: object
+      required:
+        - askId
+        - askDetailId
+        - version
+        - coreAskDetails
+      properties:
+        askId:
+          type: integer
+          format: int32
+          description: Identifier of the created ASK entity
+        askDetailId:
+          type: integer
+          format: int32
+          description: Identifier of the ASK detail entity
+        version:
+          type: integer
+          format: int32
+          description: Version number - always 1 for new ASK
+        coreAskDetails:
+          $ref: '#/components/schemas/CoreAskDetails'
+        task:
+          $ref: '#/components/schemas/TaskResponse'
+        comment:
+          $ref: '#/components/schemas/CommentResponse'
+        auditHistory:
+          $ref: '#/components/schemas/AuditHistoryResponse'
+
+    TaskResponse:
+      type: object
+      description: Created workflow task - present for Save & Exit and SUBMIT, absent for Exit
+      required:
+        - taskId
+        - statusId
+        - assigneeId
+      properties:
+        taskId:
+          type: integer
+          format: int32
+          description: Identifier of the created task
+        statusId:
+          type: integer
+          format: int32
+          description: "Workflow status: 123 (In Progress), 127 (PPL Review), or 145 (DPP Ops Review)"
+        assigneeId:
+          type: integer
+          format: int32
+          description: Identifier of the assigned user or group
+
+    CommentResponse:
+      type: object
+      description: Created comment - present only when comment was provided in request
+      required:
+        - commentId
+      properties:
+        commentId:
+          type: integer
+          format: int32
+          description: Identifier of the created comment
+
+    AuditHistoryResponse:
+      type: object
+      description: Audit record - present for Save & Exit and SUBMIT, absent for Exit
+      required:
+        - auditId
+      properties:
+        auditId:
+          type: integer
+          format: int32
+          description: Identifier of the audit history record
+
+    ProblemDetails:
+      type: object
+      description: RFC 7807 problem response, as emitted by ASP.NET Core.
+      required:
+        - type
+        - title
+        - status
+        - traceId
+      properties:
+        type:
+          type: string
+          description: URI identifying the problem type.
+          example: "https://drt.kpmg.com/errors/validation-failed"
+        title:
+          type: string
+          description: Short, human-readable summary. Stable for a given type.
+          example: "One or more validation errors occurred."
+        status:
+          type: integer
+          format: int32
+          example: 400
+        detail:
+          type: string
+          description: Explanation specific to this occurrence.
+          example: "endDate must be later than projectedStartDate."
+        instance:
+          type: string
+          description: The request path this occurred on.
+          example: "/api/v1/core-asks"
+        code:
+          type: string
+          description: Stable DRT error code. Safe for clients to branch on.
+          example: "DRT-CORE-ASK-0012"
+        traceId:
+          type: string
+          description: W3C trace identifier for the request.
+          example: "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+        errors:
+          type: object
+          description: >-
+            Field-level validation failures. Present on 400 and 422 only.
+            Each key is the field name; each value is the list of messages for it.
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            fteAmount:
+              - "fteAmount must not exceed headCountAmount."
+            endDate:
+              - "endDate must not be earlier than today."
