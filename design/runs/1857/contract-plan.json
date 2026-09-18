@@ -1,0 +1,638 @@
+{
+  "workflow": "API_CONTRACT",
+  "stage": "PLANNER",
+  "status": "CONTINUE",
+  "ticketId": "1857",
+  "storyId": "US-ASK-001",
+  "owner": "rockstarakhil",
+  "repoName": "aava_drt_demo",
+  "branch": "main",
+  "specPath": "specs/1857-core-ask-create/spec.md",
+  "runFolder": "design/runs/1857",
+  "cardPlanPath": "design/runs/1857/design-card-plan.json",
+  "apiCount": 1,
+  "cardsUsed": [
+    "ASK-POST-CORE-ASKS"
+  ],
+  "cardsSkipped": [],
+  "mode": "FIRST_CONTRACT",
+  "contractReadProof": "folder read, file absent",
+  "infoTitle": "DRT Platform API",
+  "existing": {
+    "operations": [],
+    "schemas": []
+  },
+  "plan": {
+    "operations": [
+      {
+        "cardId": "ASK-POST-CORE-ASKS",
+        "key": "POST /api/v1/core-asks",
+        "decision": "ADD",
+        "operationId": "createCoreAsk",
+        "summary": "Create a new Core ASK",
+        "description": "Create a new Core ASK and either save it as a draft or submit it for review, based on buttonValue. Exit makes no change.",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Client-generated UUID to ensure idempotent processing of retry requests"
+          }
+        ],
+        "requestSchema": "CreateCoreAskRequest",
+        "responses": [
+          {
+            "status": 201,
+            "schema": "CreateCoreAskResponse",
+            "description": "Core ASK created successfully with Save & Exit or SUBMIT"
+          },
+          {
+            "status": 200,
+            "schema": null,
+            "description": "Exit button - no changes persisted"
+          },
+          {
+            "status": 400,
+            "schema": "ProblemDetails",
+            "description": "Validation failed - missing required field, inactive reference ID, or constraint violation"
+          },
+          {
+            "status": 403,
+            "schema": "ProblemDetails",
+            "description": "Forbidden - caller lacks Create New ASK permission"
+          },
+          {
+            "status": 409,
+            "schema": "ProblemDetails",
+            "description": "Conflict - duplicate Idempotency-Key with different request body"
+          },
+          {
+            "status": 503,
+            "schema": "ProblemDetails",
+            "description": "Service unavailable - reference data, employee, or attachment service down"
+          }
+        ],
+        "satisfies": [
+          "FR1",
+          "FR2",
+          "FR3",
+          "FR4",
+          "FR5",
+          "FR6",
+          "FR7",
+          "FR8",
+          "FR9",
+          "FR10",
+          "FR11",
+          "FR12",
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "AC5",
+          "AC6",
+          "AC7"
+        ],
+        "standards": [
+          "API 001",
+          "API 002",
+          "API 003",
+          "SEC 001",
+          "SEC 002",
+          "SEC 003",
+          "DATA 001",
+          "DATA 003",
+          "DATA 004",
+          "WF 001",
+          "WF 003",
+          "REL 001",
+          "OBS 001",
+          "TEST 001"
+        ],
+        "breakingChange": false
+      }
+    ],
+    "schemas": [
+      {
+        "name": "CreateCoreAskRequest",
+        "decision": "ADD",
+        "description": "Request body for creating a new Core ASK",
+        "fields": [
+          {
+            "name": "coreAskDetails",
+            "type": "object",
+            "format": "",
+            "required": true,
+            "constraints": {},
+            "description": "Core ASK business data"
+          },
+          {
+            "name": "coreAskDetails.coreAskName",
+            "type": "string",
+            "format": "",
+            "required": true,
+            "constraints": {
+              "maxLength": 200
+            },
+            "description": "Name of the Core ASK"
+          },
+          {
+            "name": "coreAskDetails.dppGroupId",
+            "type": "integer",
+            "format": "int32",
+            "required": true,
+            "constraints": {
+              "activeReferenceData": true
+            },
+            "description": "DPP Group identifier - must be active"
+          },
+          {
+            "name": "coreAskDetails.needReasonId",
+            "type": "integer",
+            "format": "int32",
+            "required": true,
+            "constraints": {
+              "activeReferenceData": true
+            },
+            "description": "Need reason identifier - must be active"
+          },
+          {
+            "name": "coreAskDetails.generalSpecialityNeedId",
+            "type": "integer",
+            "format": "int32",
+            "required": true,
+            "constraints": {
+              "activeReferenceData": true
+            },
+            "description": "General/Specialty need identifier - must be active"
+          },
+          {
+            "name": "coreAskDetails.generalSpecialityNeedComment",
+            "type": "string",
+            "format": "",
+            "required": false,
+            "constraints": {
+              "conditionallyRequired": "Required unless generalSpecialityNeedId is the first option"
+            },
+            "description": "Comment for general/specialty need - required unless first option selected"
+          },
+          {
+            "name": "coreAskDetails.levelNeedId",
+            "type": "integer",
+            "format": "int32",
+            "required": true,
+            "constraints": {
+              "activeReferenceData": true
+            },
+            "description": "Level need identifier - must be active"
+          },
+          {
+            "name": "coreAskDetails.pml",
+            "type": "string",
+            "format": "",
+            "required": false,
+            "constraints": {
+              "maxLength": 99
+            },
+            "description": "PML field - optional, new-version only"
+          },
+          {
+            "name": "coreAskDetails.projectedStartDate",
+            "type": "string",
+            "format": "date",
+            "required": true,
+            "constraints": {
+              "iso8601": true
+            },
+            "description": "Projected start date in ISO 8601 format"
+          },
+          {
+            "name": "coreAskDetails.endDate",
+            "type": "string",
+            "format": "date",
+            "required": false,
+            "constraints": {
+              "conditionallyRequired": "Required unless needReasonId is retirement",
+              "mustBeAfter": "projectedStartDate",
+              "notBeforeToday": true,
+              "iso8601": true
+            },
+            "description": "End date in ISO 8601 format - must be after projectedStartDate and not before today"
+          },
+          {
+            "name": "coreAskDetails.outgoingResource",
+            "type": "string",
+            "format": "",
+            "required": false,
+            "constraints": {
+              "readOnly": true,
+              "derivedFrom": "employeeId"
+            },
+            "description": "Outgoing resource name - derived from employeeId, read-only"
+          },
+          {
+            "name": "coreAskDetails.employeeId",
+            "type": "integer",
+            "format": "int32",
+            "required": false,
+            "constraints": {
+              "validEmployee": true
+            },
+            "description": "Employee identifier - must be valid"
+          },
+          {
+            "name": "coreAskDetails.headCountAmount",
+            "type": "integer",
+            "format": "int32",
+            "required": true,
+            "constraints": {
+              "minimum": 1
+            },
+            "description": "Headcount amount - must be positive"
+          },
+          {
+            "name": "coreAskDetails.fteAmount",
+            "type": "number",
+            "format": "double",
+            "required": true,
+            "constraints": {
+              "minimum": 0,
+              "notExceed": "headCountAmount"
+            },
+            "description": "FTE amount - must not exceed headCountAmount"
+          },
+          {
+            "name": "coreAskDetails.rolePostingId",
+            "type": "integer",
+            "format": "int32",
+            "required": false,
+            "constraints": {
+              "conditionallyRequired": "Required when levelNeedId is in the top-3 set",
+              "activeReferenceData": true
+            },
+            "description": "Role posting identifier - required for top-3 levels, must be active"
+          },
+          {
+            "name": "coreAskDetails.numberofresources",
+            "type": "integer",
+            "format": "int32",
+            "required": false,
+            "constraints": {},
+            "description": "Number of resources"
+          },
+          {
+            "name": "coreAskDetails.titlingCategory",
+            "type": "string",
+            "format": "",
+            "required": true,
+            "constraints": {},
+            "description": "Titling category - required, new-version only"
+          },
+          {
+            "name": "coreAskDetails.transitionalCoach",
+            "type": "string",
+            "format": "",
+            "required": false,
+            "constraints": {
+              "maxLength": 99
+            },
+            "description": "Transitional coach - optional, new-version only"
+          },
+          {
+            "name": "coreAskDetails.roleSummary",
+            "type": "string",
+            "format": "",
+            "required": true,
+            "constraints": {},
+            "description": "Role summary - required"
+          },
+          {
+            "name": "coreAskDetails.roleResponsibility",
+            "type": "string",
+            "format": "",
+            "required": true,
+            "constraints": {},
+            "description": "Role responsibility - required"
+          },
+          {
+            "name": "coreAskDetails.roleQualification",
+            "type": "string",
+            "format": "",
+            "required": true,
+            "constraints": {},
+            "description": "Role qualification - required"
+          },
+          {
+            "name": "comment",
+            "type": "string",
+            "format": "",
+            "required": false,
+            "constraints": {},
+            "description": "Optional comment text"
+          },
+          {
+            "name": "documents",
+            "type": "array",
+            "format": "",
+            "required": false,
+            "constraints": {
+              "items": "file upload"
+            },
+            "description": "Optional array of document attachments"
+          },
+          {
+            "name": "buttonValue",
+            "type": "string",
+            "format": "",
+            "required": true,
+            "constraints": {
+              "enum": [
+                "Save & Exit",
+                "SUBMIT",
+                "Exit"
+              ]
+            },
+            "description": "Action button value - controls save/submit/exit behavior"
+          }
+        ]
+      },
+      {
+        "name": "CreateCoreAskResponse",
+        "decision": "ADD",
+        "description": "Response body for successfully created Core ASK",
+        "fields": [
+          {
+            "name": "askId",
+            "type": "string",
+            "format": "uuid",
+            "required": true,
+            "constraints": {},
+            "description": "Unique identifier for the created ASK"
+          },
+          {
+            "name": "askDetailId",
+            "type": "string",
+            "format": "uuid",
+            "required": true,
+            "constraints": {},
+            "description": "Unique identifier for the ASK detail record"
+          },
+          {
+            "name": "coreAskDetails",
+            "type": "object",
+            "format": "",
+            "required": true,
+            "constraints": {},
+            "description": "Echo of the created Core ASK business data"
+          },
+          {
+            "name": "version",
+            "type": "integer",
+            "format": "int32",
+            "required": true,
+            "constraints": {
+              "const": 1
+            },
+            "description": "Version number - always 1 for new ASK"
+          },
+          {
+            "name": "task",
+            "type": "object",
+            "format": "",
+            "required": true,
+            "constraints": {},
+            "description": "Created workflow task information"
+          },
+          {
+            "name": "task.taskId",
+            "type": "string",
+            "format": "uuid",
+            "required": true,
+            "constraints": {},
+            "description": "Unique identifier for the created task"
+          },
+          {
+            "name": "task.statusId",
+            "type": "integer",
+            "format": "int32",
+            "required": true,
+            "constraints": {
+              "enum": [
+                123,
+                127,
+                145
+              ]
+            },
+            "description": "Workflow status ID - 123 In Progress, 127 PPL Review, or 145 DPP Ops Review"
+          },
+          {
+            "name": "task.assigneeId",
+            "type": "string",
+            "format": "uuid",
+            "required": true,
+            "constraints": {},
+            "description": "Identifier of the assigned user or group"
+          },
+          {
+            "name": "comment",
+            "type": "object",
+            "format": "",
+            "required": false,
+            "constraints": {},
+            "description": "Created comment information - present only if comment was provided"
+          },
+          {
+            "name": "comment.commentId",
+            "type": "string",
+            "format": "uuid",
+            "required": true,
+            "constraints": {},
+            "description": "Unique identifier for the created comment"
+          },
+          {
+            "name": "auditHistory",
+            "type": "object",
+            "format": "",
+            "required": true,
+            "constraints": {},
+            "description": "Audit history record for the creation event"
+          },
+          {
+            "name": "auditHistory.auditId",
+            "type": "string",
+            "format": "uuid",
+            "required": true,
+            "constraints": {},
+            "description": "Unique identifier for the audit history record"
+          }
+        ]
+      },
+      {
+        "name": "ProblemDetails",
+        "decision": "ADD",
+        "description": "RFC 7807 problem response, as emitted by ASP.NET Core",
+        "fields": [
+          {
+            "name": "type",
+            "type": "string",
+            "format": "uri",
+            "required": true,
+            "constraints": {},
+            "description": "URI identifying the problem type"
+          },
+          {
+            "name": "title",
+            "type": "string",
+            "format": "",
+            "required": true,
+            "constraints": {},
+            "description": "Short, human-readable summary - stable for a given type"
+          },
+          {
+            "name": "status",
+            "type": "integer",
+            "format": "int32",
+            "required": true,
+            "constraints": {},
+            "description": "HTTP status code"
+          },
+          {
+            "name": "detail",
+            "type": "string",
+            "format": "",
+            "required": false,
+            "constraints": {},
+            "description": "Explanation specific to this occurrence"
+          },
+          {
+            "name": "instance",
+            "type": "string",
+            "format": "",
+            "required": false,
+            "constraints": {},
+            "description": "The request path this occurred on"
+          },
+          {
+            "name": "code",
+            "type": "string",
+            "format": "",
+            "required": false,
+            "constraints": {},
+            "description": "Stable DRT error code - safe for clients to branch on"
+          },
+          {
+            "name": "traceId",
+            "type": "string",
+            "format": "",
+            "required": true,
+            "constraints": {},
+            "description": "W3C trace identifier for the request"
+          },
+          {
+            "name": "errors",
+            "type": "object",
+            "format": "",
+            "required": false,
+            "constraints": {
+              "additionalProperties": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Field-level validation failures - present on 400 and 422 only"
+          }
+        ]
+      }
+    ]
+  },
+  "openPoints": [
+    {
+      "source": "missingFact",
+      "cardId": "ASK-POST-CORE-ASKS",
+      "item": "Status ID to name mapping: 123, 127, 145 — exact named-state equivalents not confirmed in any approved source",
+      "owner": "Business Analysis",
+      "resolution": "Not blocking - numeric IDs travel in the contract as integers per settled decision. The ID-to-name mapping is reference data, not contract surface.",
+      "blocking": false
+    },
+    {
+      "source": "missingFact",
+      "cardId": "ASK-POST-CORE-ASKS",
+      "item": "'Top-3 set' for levelNeedId referenced in BR17 — specific reference data IDs not defined",
+      "owner": "Business Analysis",
+      "resolution": "Not blocking - validation logic is server-side. Contract defines the field and conditional requirement.",
+      "blocking": false
+    },
+    {
+      "source": "missingFact",
+      "cardId": "ASK-POST-CORE-ASKS",
+      "item": "'First option' ID for needReasonId (BR6) and generalSpecialityNeedId (BR7) — specific reference data IDs not defined",
+      "owner": "Business Analysis",
+      "resolution": "Not blocking - validation logic is server-side. Contract defines the fields and conditional requirements.",
+      "blocking": false
+    },
+    {
+      "source": "missingFact",
+      "cardId": "ASK-POST-CORE-ASKS",
+      "item": "'Retirement' value for needReasonId referenced in BR11 — specific reference data ID not defined",
+      "owner": "Business Analysis",
+      "resolution": "Not blocking - validation logic is server-side. Contract defines the field and conditional requirement.",
+      "blocking": false
+    },
+    {
+      "source": "missingFact",
+      "cardId": "ASK-POST-CORE-ASKS",
+      "item": "Leadership group membership rule and attribute source used for routing decision (BR24, BR25, AC2, AC3) — not present in RBAC matrix reference",
+      "owner": "Security",
+      "resolution": "Not blocking - routing is server-side behaviour with no contract surface. Response returns whichever statusId resulted.",
+      "blocking": false
+    },
+    {
+      "source": "missingFact",
+      "cardId": "ASK-POST-CORE-ASKS",
+      "item": "Exact permission code for 'Create New ASK' — permission name not specified in spec or RBAC matrix reference",
+      "owner": "Security",
+      "resolution": "Not blocking - authorization enforcement is server-side per SEC 002. Contract defines 403 response for insufficient permission.",
+      "blocking": false
+    },
+    {
+      "source": "missingFact",
+      "cardId": "ASK-POST-CORE-ASKS",
+      "item": "Success HTTP status code — spec states 200 or 201 but does not confirm which applies for a create operation",
+      "owner": "API Contract owner",
+      "resolution": "Resolved: 201 Created per DRT API Design Standards section 6. Exit button returns 200 with no body change per settled decision.",
+      "blocking": false
+    },
+    {
+      "source": "missingFact",
+      "cardId": "ASK-POST-CORE-ASKS",
+      "item": "Idempotency key requirement and scope for the create command — not specified in spec",
+      "owner": "Solution Architecture",
+      "resolution": "Resolved: Idempotency-Key header required per DRT API Design Standards section 6 and REL 001.",
+      "blocking": false
+    },
+    {
+      "source": "missingFact",
+      "cardId": "ASK-POST-CORE-ASKS",
+      "item": "Transaction scope across Ask, Task, Comment, Audit, and Attachment entities — explicitly unconfirmed in spec (Assumption 1)",
+      "owner": "Solution Architecture",
+      "resolution": "Not blocking - transaction behaviour is implementation detail. Contract defines atomic success or failure through response codes.",
+      "blocking": false
+    },
+    {
+      "source": "missingFact",
+      "cardId": "ASK-POST-CORE-ASKS",
+      "item": "'New-version only' field semantics for pml, titlingCategory, transitionalCoach (BR9, BR18, BR19) — not clarified whether this create operation is the new version context",
+      "owner": "Business Analysis",
+      "resolution": "Not blocking - fields are included in the contract per the design card. Semantic interpretation is implementation detail.",
+      "blocking": false
+    }
+  ],
+  "blocked": [],
+  "errors": []
+}
