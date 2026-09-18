@@ -19,7 +19,7 @@
         "cardId": "ASK-POST-CORE-ASKS",
         "module": "ASK",
         "method": "POST",
-        "path": "/core-asks",
+        "path": "/api/v1/core-asks",
         "proposed": {
           "operationId": "createCoreAsk",
           "requestSchema": "CreateCoreAskRequest",
@@ -96,90 +96,116 @@
           "OBS 001",
           "TEST 001"
         ],
-        "differences": [
+        "differences": [],
+        "missingFacts": [
           {
-            "item": "API path",
-            "specValue": "POST /core-asks",
-            "masterLldValue": "POST /api/v1/asks (proposed catalogue, MLLD §15)",
-            "owner": "Solution Architecture"
+            "item": "Status ID to name mapping: 123, 127, 145 \u2014 exact named-state equivalents not confirmed in any approved source",
+            "owner": "Business Analysis",
+            "resolution": "",
+            "blocking": false
           },
           {
-            "item": "Workflow status references",
-            "specValue": "Numeric status IDs 123 (In Progress), 127 (PPL Review), 145 (DPP Ops Review)",
-            "masterLldValue": "Named states only: Draft, Pending PPL Approval, etc. (MLLD §7.4); no numeric ID mapping present",
-            "owner": "Business Analysis"
+            "item": "'Top-3 set' for levelNeedId referenced in BR17 \u2014 specific reference data IDs not defined",
+            "owner": "Business Analysis",
+            "resolution": "",
+            "blocking": false
+          },
+          {
+            "item": "'First option' ID for needReasonId (BR6) and generalSpecialityNeedId (BR7) \u2014 specific reference data IDs not defined",
+            "owner": "Business Analysis",
+            "resolution": "",
+            "blocking": false
+          },
+          {
+            "item": "'Retirement' value for needReasonId referenced in BR11 \u2014 specific reference data ID not defined",
+            "owner": "Business Analysis",
+            "resolution": "",
+            "blocking": false
+          },
+          {
+            "item": "Leadership group membership rule and attribute source used for routing decision (BR24, BR25, AC2, AC3) \u2014 not present in RBAC matrix reference",
+            "owner": "Security",
+            "resolution": "",
+            "blocking": false
+          },
+          {
+            "item": "Exact permission code for 'Create New ASK' \u2014 permission name not specified in spec or RBAC matrix reference",
+            "owner": "Security",
+            "resolution": "",
+            "blocking": false
+          },
+          {
+            "item": "Success HTTP status code \u2014 spec states 200 or 201 but does not confirm which applies for a create operation",
+            "owner": "API Contract owner",
+            "resolution": "Resolved: 201 Created. DRT API Design Standards section 6.",
+            "blocking": false
+          },
+          {
+            "item": "Idempotency key requirement and scope for the create command \u2014 not specified in spec",
+            "owner": "Solution Architecture",
+            "resolution": "Resolved: Idempotency-Key header required. DRT API Design Standards section 6.",
+            "blocking": false
+          },
+          {
+            "item": "Transaction scope across Ask, Task, Comment, Audit, and Attachment entities \u2014 explicitly unconfirmed in spec (Assumption 1)",
+            "owner": "Solution Architecture",
+            "resolution": "",
+            "blocking": false
+          },
+          {
+            "item": "'New-version only' field semantics for pml, titlingCategory, transitionalCoach (BR9, BR18, BR19) \u2014 not clarified whether this create operation is the new version context",
+            "owner": "Business Analysis",
+            "resolution": "",
+            "blocking": false
+          }
+        ],
+        "cardStatus": "Approved",
+        "blockers": [],
+        "draftPath": "design/drafts/ASK-POST-CORE-ASKS.draft.md",
+        "targetPath": "design/api-cards/ASK-POST-CORE-ASKS.md",
+        "decisions": [
+          {
+            "item": "API path",
+            "settledValue": "POST /api/v1/core-asks",
+            "rationale": "DRT API Design Standards section 2 requires the /api/v1/ prefix and a plural kebab-case collection noun. The spec's /core-asks and the Master LLD's /api/v1/asks are reconciled to /api/v1/core-asks, which keeps the spec's resource name and the Master LLD's prefix.",
+            "decidedBy": "Solution Architecture",
+            "decisionRef": "ADR-DRT-API-001"
           },
           {
             "item": "HTTP error status code for business rule violations",
-            "specValue": "422 for date constraint and FTE violations (AC5, AC7, Error Behaviour section)",
-            "masterLldValue": "Master LLD error catalogue (MLLD §12.2) defines 400 validation_failed for invalid requests; 422 is not listed",
-            "owner": "Solution Architecture"
+            "settledValue": "400 validation_failed",
+            "rationale": "Master LLD section 12.2 error catalogue outranks the story text per the source precedence table. 422 is not in the catalogue.",
+            "decidedBy": "Solution Architecture",
+            "decisionRef": "ADR-DRT-API-001"
+          },
+          {
+            "item": "Workflow status references",
+            "settledValue": "Numeric status IDs 123, 127 and 145 are carried in the contract as integers. The ID-to-name mapping is a reference-data concern, not a contract concern.",
+            "rationale": "The contract does not need the display names. The mapping remains an open reference-data item and does not block the contract.",
+            "decidedBy": "Solution Architecture",
+            "decisionRef": "ADR-DRT-API-001"
           },
           {
             "item": "Leadership submitter routing shortcut",
-            "specValue": "Leadership group submitter routes directly to status 145 DPP Ops Review, bypassing PPL Review (BR25, AC3)",
-            "masterLldValue": "MLLD §7.4 references 'Leadership submitter shortcut' but detail is unconfirmed (open item LLD T03)",
-            "owner": "Solution Architecture"
+            "settledValue": "Routing is server-side behaviour and has no contract surface. The response returns whichever statusId resulted.",
+            "rationale": "BR25 changes which status is written, not the shape of the request or response. The contract is unaffected either way.",
+            "decidedBy": "Solution Architecture",
+            "decisionRef": "ADR-DRT-API-001"
           },
           {
             "item": "buttonValue=Exit accepted by the API as a no-op",
-            "specValue": "API accepts Exit buttonValue and returns success without persisting data (FR6, AC4)",
-            "masterLldValue": "No equivalent pattern in Master LLD; exit/cancel-before-save is a UI concern with no API counterpart in the catalogue",
-            "owner": "Solution Architecture"
+            "settledValue": "Exit stays in the buttonValue enum and returns 200 with no body change.",
+            "rationale": "Confirmed in spec Assumption 2. The Master LLD is silent rather than contradictory, so there is nothing to reconcile.",
+            "decidedBy": "Solution Architecture",
+            "decisionRef": "ADR-DRT-API-001"
           }
-        ],
-        "missingFacts": [
-          {
-            "item": "Status ID to name mapping: 123, 127, 145 — exact named-state equivalents not confirmed in any approved source",
-            "owner": "Business Analysis"
-          },
-          {
-            "item": "'Top-3 set' for levelNeedId referenced in BR17 — specific reference data IDs not defined",
-            "owner": "Business Analysis"
-          },
-          {
-            "item": "'First option' ID for needReasonId (BR6) and generalSpecialityNeedId (BR7) — specific reference data IDs not defined",
-            "owner": "Business Analysis"
-          },
-          {
-            "item": "'Retirement' value for needReasonId referenced in BR11 — specific reference data ID not defined",
-            "owner": "Business Analysis"
-          },
-          {
-            "item": "Leadership group membership rule and attribute source used for routing decision (BR24, BR25, AC2, AC3) — not present in RBAC matrix reference",
-            "owner": "Security"
-          },
-          {
-            "item": "Exact permission code for 'Create New ASK' — permission name not specified in spec or RBAC matrix reference",
-            "owner": "Security"
-          },
-          {
-            "item": "Success HTTP status code — spec states 200 or 201 but does not confirm which applies for a create operation",
-            "owner": "API Contract owner"
-          },
-          {
-            "item": "Idempotency key requirement and scope for the create command — not specified in spec",
-            "owner": "Solution Architecture"
-          },
-          {
-            "item": "Transaction scope across Ask, Task, Comment, Audit, and Attachment entities — explicitly unconfirmed in spec (Assumption 1)",
-            "owner": "Solution Architecture"
-          },
-          {
-            "item": "'New-version only' field semantics for pml, titlingCategory, transitionalCoach (BR9, BR18, BR19) — not clarified whether this create operation is the new version context",
-            "owner": "Business Analysis"
-          }
-        ],
-        "cardStatus": "Ready for Review",
-        "blockers": [],
-        "draftPath": "design/drafts/ASK-POST-CORE-ASKS.draft.md",
-        "targetPath": "design/api-cards/ASK-POST-CORE-ASKS.md"
+        ]
       }
     ],
     "assumptions": [
       "buttonValue=Exit is treated as a server-side no-op returning success without persistence (confirmed in spec Assumption 2).",
       "Attachment file-upload contract is represented as a file upload array in the request body (confirmed in spec Assumption 3).",
-      "All entities (Ask, Task, Comment, Audit, Attachments) are created atomically or not at all — transaction behaviour is unconfirmed and recorded as a missing fact.",
+      "All entities (Ask, Task, Comment, Audit, Attachments) are created atomically or not at all \u2014 transaction behaviour is unconfirmed and recorded as a missing fact.",
       "Leadership group membership is resolved from the authenticated caller's server-side profile, never from the request body (SEC 003).",
       "The 'new-version only' field qualifier in BR9, BR18, BR19 applies to this initial create operation as version 1."
     ]
