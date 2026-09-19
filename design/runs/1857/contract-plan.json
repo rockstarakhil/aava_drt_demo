@@ -30,7 +30,6 @@
         "decision": "ADD",
         "operationId": "createCoreAsk",
         "summary": "Create a new Core ASK",
-        "description": "Create a new Core ASK and either save it as a draft or submit it for review, based on buttonValue. Exit makes no change.",
         "parameters": [
           {
             "name": "Idempotency-Key",
@@ -120,7 +119,6 @@
       {
         "name": "CreateCoreAskRequest",
         "decision": "ADD",
-        "description": "Request body for creating a new Core ASK",
         "fields": [
           {
             "name": "coreAskDetails",
@@ -342,9 +340,12 @@
             "format": "",
             "required": false,
             "constraints": {
-              "items": "file upload"
+              "items": {
+                "type": "object",
+                "schema": "DocumentReference"
+              }
             },
-            "description": "Optional array of document attachments"
+            "description": "Optional array of document references"
           },
           {
             "name": "buttonValue",
@@ -363,9 +364,30 @@
         ]
       },
       {
+        "name": "DocumentReference",
+        "decision": "ADD",
+        "fields": [
+          {
+            "name": "documentId",
+            "type": "string",
+            "format": "uuid",
+            "required": true,
+            "constraints": {},
+            "description": "Unique identifier of the uploaded document"
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "format": "",
+            "required": true,
+            "constraints": {},
+            "description": "Display name of the document"
+          }
+        ]
+      },
+      {
         "name": "CreateCoreAskResponse",
         "decision": "ADD",
-        "description": "Response body for successfully created Core ASK",
         "fields": [
           {
             "name": "askId",
@@ -482,7 +504,6 @@
       {
         "name": "ProblemDetails",
         "decision": "ADD",
-        "description": "RFC 7807 problem response, as emitted by ASP.NET Core",
         "fields": [
           {
             "name": "type",
