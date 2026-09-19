@@ -91,108 +91,15 @@ components:
         - buttonValue
       properties:
         coreAskDetails:
-          type: object
-          description: Core ASK business data
-          required:
-            - coreAskName
-            - dppGroupId
-            - needReasonId
-            - generalSpecialityNeedId
-            - levelNeedId
-            - projectedStartDate
-            - headCountAmount
-            - fteAmount
-            - titlingCategory
-            - roleSummary
-            - roleResponsibility
-            - roleQualification
-          properties:
-            coreAskName:
-              type: string
-              description: Name of the Core ASK
-              maxLength: 200
-            dppGroupId:
-              type: integer
-              format: int32
-              description: DPP Group identifier - must be active
-            needReasonId:
-              type: integer
-              format: int32
-              description: Need reason identifier - must be active
-            generalSpecialityNeedId:
-              type: integer
-              format: int32
-              description: General/Specialty need identifier - must be active
-            generalSpecialityNeedComment:
-              type: string
-              description: Comment for general/specialty need - required unless first option selected
-            levelNeedId:
-              type: integer
-              format: int32
-              description: Level need identifier - must be active
-            pml:
-              type: string
-              description: PML field - optional, new-version only
-              maxLength: 99
-            projectedStartDate:
-              type: string
-              format: date
-              description: Projected start date in ISO 8601 format
-            endDate:
-              type: string
-              format: date
-              description: End date in ISO 8601 format - must be after projectedStartDate and not before today
-            outgoingResource:
-              type: string
-              description: Outgoing resource name - derived from employeeId, read-only
-              readOnly: true
-            employeeId:
-              type: integer
-              format: int32
-              description: Employee identifier - must be valid
-            headCountAmount:
-              type: integer
-              format: int32
-              description: Headcount amount - must be positive
-              minimum: 1
-            fteAmount:
-              type: number
-              format: double
-              description: FTE amount - must not exceed headCountAmount
-              minimum: 0
-            rolePostingId:
-              type: integer
-              format: int32
-              description: Role posting identifier - required for top-3 levels, must be active
-            numberofresources:
-              type: integer
-              format: int32
-              description: Number of resources
-            titlingCategory:
-              type: string
-              description: Titling category - required, new-version only
-            transitionalCoach:
-              type: string
-              description: Transitional coach - optional, new-version only
-              maxLength: 99
-            roleSummary:
-              type: string
-              description: Role summary - required
-            roleResponsibility:
-              type: string
-              description: Role responsibility - required
-            roleQualification:
-              type: string
-              description: Role qualification - required
+          $ref: '#/components/schemas/CoreAskDetails'
         comment:
           type: string
           description: Optional comment text
         documents:
           type: array
-          description: Optional array of document attachments
+          description: Optional array of document references
           items:
-            type: string
-            format: binary
+            $ref: '#/components/schemas/DocumentReference'
         buttonValue:
           type: string
           description: Action button value - controls save/submit/exit behavior
@@ -200,6 +107,116 @@ components:
             - Save & Exit
             - SUBMIT
             - Exit
+
+    CoreAskDetails:
+      type: object
+      description: Core ASK business data
+      required:
+        - coreAskName
+        - dppGroupId
+        - needReasonId
+        - generalSpecialityNeedId
+        - levelNeedId
+        - projectedStartDate
+        - headCountAmount
+        - fteAmount
+        - titlingCategory
+        - roleSummary
+        - roleResponsibility
+        - roleQualification
+      properties:
+        coreAskName:
+          type: string
+          description: Name of the Core ASK
+          maxLength: 200
+        dppGroupId:
+          type: integer
+          format: int32
+          description: DPP Group identifier - must be active
+        needReasonId:
+          type: integer
+          format: int32
+          description: Need reason identifier - must be active
+        generalSpecialityNeedId:
+          type: integer
+          format: int32
+          description: General/Specialty need identifier - must be active
+        generalSpecialityNeedComment:
+          type: string
+          description: Comment for general/specialty need - required unless first option selected
+        levelNeedId:
+          type: integer
+          format: int32
+          description: Level need identifier - must be active
+        pml:
+          type: string
+          description: PML field - optional, new-version only
+          maxLength: 99
+        projectedStartDate:
+          type: string
+          format: date
+          description: Projected start date in ISO 8601 format
+        endDate:
+          type: string
+          format: date
+          description: End date in ISO 8601 format - must be after projectedStartDate and not before today
+        outgoingResource:
+          type: string
+          description: Outgoing resource name - derived from employeeId, read-only
+          readOnly: true
+        employeeId:
+          type: integer
+          format: int32
+          description: Employee identifier - must be valid
+        headCountAmount:
+          type: integer
+          format: int32
+          description: Headcount amount - must be positive
+          minimum: 1
+        fteAmount:
+          type: number
+          format: double
+          description: FTE amount - must not exceed headCountAmount
+          minimum: 0
+        rolePostingId:
+          type: integer
+          format: int32
+          description: Role posting identifier - required for top-3 levels, must be active
+        numberofresources:
+          type: integer
+          format: int32
+          description: Number of resources
+        titlingCategory:
+          type: string
+          description: Titling category - required, new-version only
+        transitionalCoach:
+          type: string
+          description: Transitional coach - optional, new-version only
+          maxLength: 99
+        roleSummary:
+          type: string
+          description: Role summary - required
+        roleResponsibility:
+          type: string
+          description: Role responsibility - required
+        roleQualification:
+          type: string
+          description: Role qualification - required
+
+    DocumentReference:
+      type: object
+      description: Reference to a previously uploaded document
+      required:
+        - documentId
+        - name
+      properties:
+        documentId:
+          type: string
+          format: uuid
+          description: Unique identifier of the uploaded document
+        name:
+          type: string
+          description: Display name of the document
 
     CreateCoreAskResponse:
       type: object
@@ -227,50 +244,59 @@ components:
           type: integer
           format: int32
           description: Version number - always 1 for new ASK
-          enum:
-            - 1
         task:
-          type: object
-          description: Created workflow task information
-          required:
-            - taskId
-            - statusId
-            - assigneeId
-          properties:
-            taskId:
-              type: string
-              format: uuid
-              description: Unique identifier for the created task
-            statusId:
-              type: integer
-              format: int32
-              description: Workflow status ID - 123 In Progress, 127 PPL Review, or 145 DPP Ops Review
-              enum:
-                - 123
-                - 127
-                - 145
-            assigneeId:
-              type: string
-              format: uuid
-              description: Identifier of the assigned user or group
+          $ref: '#/components/schemas/TaskInfo'
         comment:
-          type: object
-          description: Created comment information - present only if comment was provided
-          properties:
-            commentId:
-              type: string
-              format: uuid
-              description: Unique identifier for the created comment
+          $ref: '#/components/schemas/CommentInfo'
         auditHistory:
-          type: object
-          description: Audit history record for the creation event
-          required:
-            - auditId
-          properties:
-            auditId:
-              type: string
-              format: uuid
-              description: Unique identifier for the audit history record
+          $ref: '#/components/schemas/AuditHistoryInfo'
+
+    TaskInfo:
+      type: object
+      description: Created workflow task information
+      required:
+        - taskId
+        - statusId
+        - assigneeId
+      properties:
+        taskId:
+          type: string
+          format: uuid
+          description: Unique identifier for the created task
+        statusId:
+          type: integer
+          format: int32
+          description: Workflow status ID - 123 In Progress, 127 PPL Review, or 145 DPP Ops Review
+          enum:
+            - 123
+            - 127
+            - 145
+        assigneeId:
+          type: string
+          format: uuid
+          description: Identifier of the assigned user or group
+
+    CommentInfo:
+      type: object
+      description: Created comment information - present only if comment was provided
+      required:
+        - commentId
+      properties:
+        commentId:
+          type: string
+          format: uuid
+          description: Unique identifier for the created comment
+
+    AuditHistoryInfo:
+      type: object
+      description: Audit history record for the creation event
+      required:
+        - auditId
+      properties:
+        auditId:
+          type: string
+          format: uuid
+          description: Unique identifier for the audit history record
 
     ProblemDetails:
       type: object
@@ -283,6 +309,7 @@ components:
       properties:
         type:
           type: string
+          format: uri
           description: URI identifying the problem type.
           example: "https://drt.kpmg.com/errors/validation-failed"
         title:
