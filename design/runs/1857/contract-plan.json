@@ -103,14 +103,8 @@
           "SEC 001",
           "SEC 002",
           "SEC 003",
-          "DATA 001",
-          "DATA 003",
           "DATA 004",
-          "WF 001",
-          "WF 003",
-          "REL 001",
-          "OBS 001",
-          "TEST 001"
+          "REL 001"
         ],
         "breakingChange": false
       }
