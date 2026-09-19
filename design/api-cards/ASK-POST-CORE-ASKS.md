@@ -24,6 +24,7 @@ ADR-DRT-API-001.
 | Workflow statuses | Numeric IDs 123, 127, 145 | Named states only | Numeric IDs travel in the contract as integers. The ID-to-name mapping is reference data, not contract surface |
 | Leadership routing shortcut | Leadership submitter goes straight to 145 | Referenced but unconfirmed | Server-side behaviour with no contract surface. The response returns whichever statusId resulted |
 | `buttonValue = Exit` | Accepted as a no-op | Not mentioned | Stays in the enum, returns 200 with no change. The Master LLD is silent, not contradictory |
+| Attachment upload (OI-6) | Spec said "file upload array" | Standards forbid binary under application/json | `documents` is an array of document-reference objects: `{ documentId: string/uuid, name: string }`. Files are uploaded first to `POST /api/v1/documents`, which returns the id. The create endpoint stays pure application/json |
 
 ## Contract summary
 
