@@ -31,7 +31,7 @@ ADR-DRT-API-001.
 | Field | Value |
 |---|---|
 | Path and query | None |
-| Request schema | CreateCoreAskRequest: coreAskDetails, comment, documents, buttonValue (Save & Exit, SUBMIT, Exit) |
+| Request schema | CreateCoreAskRequest: coreAskDetails, comment, documents (array of DocumentReference: documentId uuid, name string), buttonValue (Save & Exit, SUBMIT, Exit) |
 | Response schema | CreateCoreAskResponse: askId, askDetailId, coreAskDetails, version, task (taskId, statusId, assigneeId), comment.commentId, auditHistory.auditId |
 | Success status | **201 Created** for Save & Exit and SUBMIT. **200 OK** for Exit, which saves nothing (DRT API Design Standards 6) |
 | Idempotency | `Idempotency-Key` header required (DRT API Design Standards 6, REL 001) |
