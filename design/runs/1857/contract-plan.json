@@ -15,19 +15,34 @@
     "ASK-POST-CORE-ASKS"
   ],
   "cardsSkipped": [],
-  "mode": "FIRST_CONTRACT",
-  "contractReadProof": "folder read, file absent",
+  "mode": "EXISTING_CONTRACT",
+  "contractReadProof": "folder read, file present",
   "infoTitle": "DRT Platform API",
   "existing": {
-    "operations": [],
-    "schemas": []
+    "operations": [
+      {
+        "method": "POST",
+        "path": "/api/v1/core-asks",
+        "operationId": "createCoreAsk"
+      }
+    ],
+    "schemas": [
+      "CreateCoreAskRequest",
+      "CoreAskDetails",
+      "DocumentReference",
+      "CreateCoreAskResponse",
+      "TaskInfo",
+      "CommentInfo",
+      "AuditHistoryInfo",
+      "ProblemDetails"
+    ]
   },
   "plan": {
     "operations": [
       {
         "cardId": "ASK-POST-CORE-ASKS",
         "key": "POST /api/v1/core-asks",
-        "decision": "ADD",
+        "decision": "MODIFY",
         "operationId": "createCoreAsk",
         "summary": "Create a new Core ASK",
         "parameters": [
@@ -112,7 +127,7 @@
     "schemas": [
       {
         "name": "CreateCoreAskRequest",
-        "decision": "ADD",
+        "decision": "MODIFY",
         "fields": [
           {
             "name": "coreAskDetails",
@@ -358,8 +373,210 @@
         ]
       },
       {
+        "name": "CoreAskDetails",
+        "decision": "MODIFY",
+        "fields": [
+          {
+            "name": "coreAskName",
+            "type": "string",
+            "format": "",
+            "required": true,
+            "constraints": {
+              "maxLength": 200
+            },
+            "description": "Name of the Core ASK"
+          },
+          {
+            "name": "dppGroupId",
+            "type": "integer",
+            "format": "int32",
+            "required": true,
+            "constraints": {
+              "activeReferenceData": true
+            },
+            "description": "DPP Group identifier - must be active"
+          },
+          {
+            "name": "needReasonId",
+            "type": "integer",
+            "format": "int32",
+            "required": true,
+            "constraints": {
+              "activeReferenceData": true
+            },
+            "description": "Need reason identifier - must be active"
+          },
+          {
+            "name": "generalSpecialityNeedId",
+            "type": "integer",
+            "format": "int32",
+            "required": true,
+            "constraints": {
+              "activeReferenceData": true
+            },
+            "description": "General/Specialty need identifier - must be active"
+          },
+          {
+            "name": "generalSpecialityNeedComment",
+            "type": "string",
+            "format": "",
+            "required": false,
+            "constraints": {
+              "conditionallyRequired": "Required unless generalSpecialityNeedId is the first option"
+            },
+            "description": "Comment for general/specialty need - required unless first option selected"
+          },
+          {
+            "name": "levelNeedId",
+            "type": "integer",
+            "format": "int32",
+            "required": true,
+            "constraints": {
+              "activeReferenceData": true
+            },
+            "description": "Level need identifier - must be active"
+          },
+          {
+            "name": "pml",
+            "type": "string",
+            "format": "",
+            "required": false,
+            "constraints": {
+              "maxLength": 99
+            },
+            "description": "PML field - optional, new-version only"
+          },
+          {
+            "name": "projectedStartDate",
+            "type": "string",
+            "format": "date",
+            "required": true,
+            "constraints": {
+              "iso8601": true
+            },
+            "description": "Projected start date in ISO 8601 format"
+          },
+          {
+            "name": "endDate",
+            "type": "string",
+            "format": "date",
+            "required": false,
+            "constraints": {
+              "conditionallyRequired": "Required unless needReasonId is retirement",
+              "mustBeAfter": "projectedStartDate",
+              "notBeforeToday": true,
+              "iso8601": true
+            },
+            "description": "End date in ISO 8601 format - must be after projectedStartDate and not before today"
+          },
+          {
+            "name": "outgoingResource",
+            "type": "string",
+            "format": "",
+            "required": false,
+            "constraints": {
+              "readOnly": true,
+              "derivedFrom": "employeeId"
+            },
+            "description": "Outgoing resource name - derived from employeeId, read-only"
+          },
+          {
+            "name": "employeeId",
+            "type": "integer",
+            "format": "int32",
+            "required": false,
+            "constraints": {
+              "validEmployee": true
+            },
+            "description": "Employee identifier - must be valid"
+          },
+          {
+            "name": "headCountAmount",
+            "type": "integer",
+            "format": "int32",
+            "required": true,
+            "constraints": {
+              "minimum": 1
+            },
+            "description": "Headcount amount - must be positive"
+          },
+          {
+            "name": "fteAmount",
+            "type": "number",
+            "format": "double",
+            "required": true,
+            "constraints": {
+              "minimum": 0,
+              "notExceed": "headCountAmount"
+            },
+            "description": "FTE amount - must not exceed headCountAmount"
+          },
+          {
+            "name": "rolePostingId",
+            "type": "integer",
+            "format": "int32",
+            "required": false,
+            "constraints": {
+              "conditionallyRequired": "Required when levelNeedId is in the top-3 set",
+              "activeReferenceData": true
+            },
+            "description": "Role posting identifier - required for top-3 levels, must be active"
+          },
+          {
+            "name": "numberofresources",
+            "type": "integer",
+            "format": "int32",
+            "required": false,
+            "constraints": {},
+            "description": "Number of resources"
+          },
+          {
+            "name": "titlingCategory",
+            "type": "string",
+            "format": "",
+            "required": true,
+            "constraints": {},
+            "description": "Titling category - required, new-version only"
+          },
+          {
+            "name": "transitionalCoach",
+            "type": "string",
+            "format": "",
+            "required": false,
+            "constraints": {
+              "maxLength": 99
+            },
+            "description": "Transitional coach - optional, new-version only"
+          },
+          {
+            "name": "roleSummary",
+            "type": "string",
+            "format": "",
+            "required": true,
+            "constraints": {},
+            "description": "Role summary - required"
+          },
+          {
+            "name": "roleResponsibility",
+            "type": "string",
+            "format": "",
+            "required": true,
+            "constraints": {},
+            "description": "Role responsibility - required"
+          },
+          {
+            "name": "roleQualification",
+            "type": "string",
+            "format": "",
+            "required": true,
+            "constraints": {},
+            "description": "Role qualification - required"
+          }
+        ]
+      },
+      {
         "name": "DocumentReference",
-        "decision": "ADD",
+        "decision": "MODIFY",
         "fields": [
           {
             "name": "documentId",
@@ -381,7 +598,7 @@
       },
       {
         "name": "CreateCoreAskResponse",
-        "decision": "ADD",
+        "decision": "MODIFY",
         "fields": [
           {
             "name": "askId",
@@ -496,8 +713,72 @@
         ]
       },
       {
+        "name": "TaskInfo",
+        "decision": "MODIFY",
+        "fields": [
+          {
+            "name": "taskId",
+            "type": "string",
+            "format": "uuid",
+            "required": true,
+            "constraints": {},
+            "description": "Unique identifier for the created task"
+          },
+          {
+            "name": "statusId",
+            "type": "integer",
+            "format": "int32",
+            "required": true,
+            "constraints": {
+              "enum": [
+                123,
+                127,
+                145
+              ]
+            },
+            "description": "Workflow status ID - 123 In Progress, 127 PPL Review, or 145 DPP Ops Review"
+          },
+          {
+            "name": "assigneeId",
+            "type": "string",
+            "format": "uuid",
+            "required": true,
+            "constraints": {},
+            "description": "Identifier of the assigned user or group"
+          }
+        ]
+      },
+      {
+        "name": "CommentInfo",
+        "decision": "MODIFY",
+        "fields": [
+          {
+            "name": "commentId",
+            "type": "string",
+            "format": "uuid",
+            "required": true,
+            "constraints": {},
+            "description": "Unique identifier for the created comment"
+          }
+        ]
+      },
+      {
+        "name": "AuditHistoryInfo",
+        "decision": "MODIFY",
+        "fields": [
+          {
+            "name": "auditId",
+            "type": "string",
+            "format": "uuid",
+            "required": true,
+            "constraints": {},
+            "description": "Unique identifier for the audit history record"
+          }
+        ]
+      },
+      {
         "name": "ProblemDetails",
-        "decision": "ADD",
+        "decision": "MODIFY",
         "fields": [
           {
             "name": "type",
